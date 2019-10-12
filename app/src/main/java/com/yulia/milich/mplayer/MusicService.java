@@ -71,6 +71,7 @@ public class MusicService  extends Service implements
             int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
             int songDateAdded = songs.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED);
+            int songData = songs.getColumnIndex(MediaStore.Audio.Media.DATA);
 
             Song song;
 
@@ -78,7 +79,8 @@ public class MusicService  extends Service implements
                 long longSongID = songs.getLong(songID);
                 String currentTitle = songs.getString(songTitle);
                 String DateAdded = songs.getString(songDateAdded);
-                song = new Song(longSongID, currentTitle, DateAdded);
+                String data = songs.getString(songData);
+                song = new Song(longSongID, currentTitle, DateAdded, data);
                 valuesList.add(song);
             }
         }

@@ -1,18 +1,14 @@
 package com.yulia.milich.mplayer;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -32,6 +28,8 @@ public class MusicList extends AppCompatActivity {
     private ListView lvSongs;
     private ArrayList<Song> songList;
     private ArrayList<String> songsNames;
+    private ArrayList<String> directories;
+    private ArrayList<String> directoriesPath;
     private ArrayAdapter adapter;
     public static final int mPrem = 1; //for premition request
 
@@ -49,13 +47,16 @@ public class MusicList extends AppCompatActivity {
 
         musicBound = false;
 
-        if(playIntent ==null)
+        if(playIntent == null)
         {
             playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection,
                     Context.BIND_AUTO_CREATE);
             startService(playIntent);
         }
+
+        directories = new ArrayList<>();
+        directoriesPath = new ArrayList<>();
 
         songsNames = new ArrayList<String>();
         lvSongs = (ListView) findViewById(R.id.lvSongs);
@@ -74,24 +75,17 @@ public class MusicList extends AppCompatActivity {
 
 
         getSongs();
-
-
-        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, songsNames);
-        lvSongs.setAdapter(adapter);
-        lvSongs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // change playing song to the chosen song
-                MusicList.musicService.setSong(i);
-                MusicList.musicService.playSong();
-            }
-        });
+        //getDirSongs();
+        listSongs();
 
 
     }
 
+
+
     public void getSongs() {
+        songList.clear();
+        songsNames.clear();
 
         ContentResolver cr = getContentResolver();       //--allows access to the the phone
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;      //--songUri is the address to the music files in the phone
@@ -104,7 +98,7 @@ public class MusicList extends AppCompatActivity {
 
             Song song;
 
-            String pathPatern = ".*(/.*/.*)";
+            String pathPatern = ".*(/(.*)/)";
             Pattern pathP = Pattern.compile(pathPatern);
 
             while (songs.moveToNext()) {
@@ -115,18 +109,95 @@ public class MusicList extends AppCompatActivity {
                 //songsNames.add(currentTitle);
                 Matcher m = pathP.matcher(data);
                 if(m.find()){
-                    songsNames.add(m.group(1));
+                    songsNames.add(m.group(2));
+                    if(!directories.contains(m.group(2))){
+                        directories.add(m.group(2));
+                        directoriesPath.add(data);
+                    }
                 }
                 else{
                     songsNames.add(currentTitle);
                 }
-                //ongsNames.add(m.group(0));
+                //songsNames.add(m.group(0));
                 //songsNames.add(String.valueOf(m.find()));
-                song = new Song(longSongID, currentTitle, DateAdded);
+                song = new Song(longSongID, currentTitle, DateAdded, data);
                 songList.add(song);
             }
 
         }
+    }
+
+    public void getDirSongs(String path){
+        songList.clear();
+        songsNames.clear();
+
+        ContentResolver cr = getContentResolver();       //--allows access to the the phone
+        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;      //--songUri is the address to the music files in the phone
+        Cursor songs = cr.query(songUri, null, MediaStore.Audio.Media.DATA + " like ?", new String[] {"%" + path + "%"}, null);
+        if (songs != null && songs.moveToFirst()) {
+            int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
+            int songDateAdded = songs.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED);
+            int songData = songs.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+            Song song;
+
+            String pathPatern = ".*(/(.*)/)";
+            Pattern pathP = Pattern.compile(pathPatern);
+
+            while (songs.moveToNext()) {
+                long longSongID = songs.getLong(songID);
+                String currentTitle = songs.getString(songTitle);
+                String DateAdded = songs.getString(songDateAdded);
+                String data = songs.getString(songData);
+                //songsNames.add(currentTitle);
+                Matcher m = pathP.matcher(data);
+                if(m.find()){
+                    songsNames.add(m.group(2));
+                }
+                else{
+                    songsNames.add(currentTitle);
+                }
+                //songsNames.add(m.group(0));
+                //songsNames.add(String.valueOf(m.find()));
+                song = new Song(longSongID, currentTitle, DateAdded, data);
+                songList.add(song);
+            }
+
+        }
+    }
+
+    private void listSongs() {
+        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, songsNames);
+        lvSongs.setAdapter(adapter);
+        lvSongs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // change playing song to the chosen song
+                MusicList.musicService.setSong(i);
+                MusicList.musicService.playSong();
+            }
+        });
+    }
+
+    public void listDirectories(){
+        adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, directories);
+        lvSongs.setAdapter(adapter);
+        lvSongs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //step into directory
+                String pathPatern = "(.*)/";
+                Pattern pathP = Pattern.compile(pathPatern);
+                Matcher m = pathP.matcher(directoriesPath.get(i));
+                if(m.find()){
+                    getDirSongs(m.group(1));
+                }
+                listSongs();
+            }
+        });
     }
 
     //menu
@@ -150,6 +221,10 @@ public class MusicList extends AppCompatActivity {
                 else
                     MusicList.musicService.resume();
                 MusicList.isPlaying = !MusicList.isPlaying;
+                break;
+
+            case R.id.sortD:
+                listDirectories();
                 break;
 //            case R.id.manu_main:
 //                intent = new Intent(MusicList.this, MusicList.class);

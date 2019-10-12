@@ -22,12 +22,12 @@
         <!--android:title="main menu"-->
         <!--android:icon="@android:drawable/ic_menu_info_details">-->
     <!--</item>-->
-    <!--<item-->
-        <!--android:orderInCategory="100"-->
-        <!--android:id="@+id/call"-->
-        <!--android:title="phone call"-->
-        <!--android:icon="@android:drawable/ic_menu_info_details">-->
-    <!--</item>-->
+    <item
+        android:orderInCategory="100"
+        android:id="@+id/sortD"
+        android:title="sort by directory"
+        android:icon="@android:drawable/ic_menu_info_details">
+    </item>
     <item
         android:orderInCategory="100"
         android:id="@+id/music"
