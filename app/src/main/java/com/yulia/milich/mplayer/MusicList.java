@@ -24,6 +24,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MusicList extends AppCompatActivity {
 
@@ -59,16 +61,16 @@ public class MusicList extends AppCompatActivity {
         lvSongs = (ListView) findViewById(R.id.lvSongs);
         songList = new ArrayList<Song>();
 
-        if (ContextCompat.checkSelfPermission(MusicList.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MusicList.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                ActivityCompat.requestPermissions(MusicList.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, mPrem);
-            } else {
-                ActivityCompat.requestPermissions(MusicList.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, mPrem);
-            }
-
-        } else {
-            //todo enter to the list
-        }
+//        if (ContextCompat.checkSelfPermission(MusicList.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(MusicList.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+//                ActivityCompat.requestPermissions(MusicList.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, mPrem);
+//            } else {
+//                ActivityCompat.requestPermissions(MusicList.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, mPrem);
+//            }
+//
+//        } else {
+//            //todo enter to the list
+//        }
 
 
         getSongs();
@@ -97,14 +99,30 @@ public class MusicList extends AppCompatActivity {
         if (songs != null && songs.moveToFirst()) {
             int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
+            int songDateAdded = songs.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED);
+            int songData = songs.getColumnIndex(MediaStore.Audio.Media.DATA);
 
             Song song;
 
+            String pathPatern = ".*(/.*/.*)";
+            Pattern pathP = Pattern.compile(pathPatern);
+
             while (songs.moveToNext()) {
-                //long longSongID = songs.getLong(songID);
+                long longSongID = songs.getLong(songID);
                 String currentTitle = songs.getString(songTitle);
-                songsNames.add(currentTitle);
-                song = new Song(songID, currentTitle);
+                String DateAdded = songs.getString(songDateAdded);
+                String data = songs.getString(songData);
+                //songsNames.add(currentTitle);
+                Matcher m = pathP.matcher(data);
+                if(m.find()){
+                    songsNames.add(m.group(1));
+                }
+                else{
+                    songsNames.add(currentTitle);
+                }
+                //ongsNames.add(m.group(0));
+                //songsNames.add(String.valueOf(m.find()));
+                song = new Song(longSongID, currentTitle, DateAdded);
                 songList.add(song);
             }
 
@@ -121,10 +139,7 @@ public class MusicList extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) { //when selcting option in the menu
-        // main --> go to menu
         //music --> stop/play music
-        //instraction --> go to instraction
-        // call --> go to phone call
         int id = item.getItemId();
         Intent intent = null;
 

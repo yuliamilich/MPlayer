@@ -70,13 +70,15 @@ public class MusicService  extends Service implements
         if (songs != null && songs.moveToFirst()) {
             int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
+            int songDateAdded = songs.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED);
 
             Song song;
 
             while (songs.moveToNext()) {
                 long longSongID = songs.getLong(songID);
                 String currentTitle = songs.getString(songTitle);
-                song = new Song(longSongID, currentTitle);
+                String DateAdded = songs.getString(songDateAdded);
+                song = new Song(longSongID, currentTitle, DateAdded);
                 valuesList.add(song);
             }
         }
