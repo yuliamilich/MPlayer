@@ -16,12 +16,12 @@
         <!--android:title="Home"-->
         <!--app:showAsAction="never"/>-->
 
-    <!--<item-->
-        <!--android:orderInCategory="100"-->
-        <!--android:id="@+id/manu_main"-->
-        <!--android:title="main menu"-->
-        <!--android:icon="@android:drawable/ic_menu_info_details">-->
-    <!--</item>-->
+    <item
+        android:orderInCategory="100"
+        android:id="@+id/sortS"
+        android:title="sort by song"
+        android:icon="@android:drawable/ic_menu_info_details">
+    </item>
     <item
         android:orderInCategory="100"
         android:id="@+id/sortD"

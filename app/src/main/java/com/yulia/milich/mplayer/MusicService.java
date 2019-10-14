@@ -30,6 +30,7 @@ public class MusicService  extends Service implements
     private final IBinder musicBind = new MusicBinder();
     private boolean isStopped; //state of the player
     private Intent playIntent;
+//    private MusicList m;
 
     @Override
     public void onCreate() {
@@ -51,7 +52,9 @@ public class MusicService  extends Service implements
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
 
-        getSongs();
+        //getSongs();
+//        m = new MusicList();
+//        valuesList = m.getSongList();
 
     }
 
@@ -118,12 +121,12 @@ public class MusicService  extends Service implements
         isStopped = false;
     }
 
-    public void playSong() {
+    public void playSong(ArrayList <Song> songList) {
         // play song from the list
         if (player != null) //אם נוצר כבר
             player.reset();
 
-        Song songToPlay = valuesList.get(songPosn);
+        Song songToPlay = songList.get(songPosn);
         long songId = songToPlay.getId();
 
         Uri trackUri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,

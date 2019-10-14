@@ -2,7 +2,7 @@ package com.yulia.milich.mplayer;
 
 public class Song {
     private long ID;
-    private  String title;
+    private String title;
     private String DateAdded;
     private String path;
 

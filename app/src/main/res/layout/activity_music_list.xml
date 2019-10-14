@@ -7,9 +7,9 @@
     tools:context=".MusicList">
 
     <TableLayout
-        android:layout_width="348dp"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="8dp"
+        android:id="@+id/tableLayout"
+        android:layout_width="367dp"
+        android:layout_height="499dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
@@ -18,17 +18,19 @@
         android:layout_weight="0.00"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.166">
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="300dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.00"
+                android:layout_weight="4"
                 android:fontFamily="casual"
                 android:gravity="center_horizontal"
                 android:text=" Names or Music"
@@ -38,12 +40,96 @@
 
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="239dp">
 
             <ListView
                 android:id="@+id/lvSongs"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="238dp"
+                android:layout_weight="4"
+                android:listSelector="#0f0" /> <!--list selector in green color-->
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/song"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <TextView
+                android:id="@+id/currentSong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="pirates of the carribian"
+                android:textSize="20sp" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:gravity="center_vertical|center"
+                android:text="TextView" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="19dp">
+
+            <ImageButton
+                android:id="@+id/imageButton3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.33"
+                app:srcCompat="@android:drawable/ic_media_previous" />
+
+            <ImageButton
+                android:id="@+id/pause"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.33"
+                app:srcCompat="@android:drawable/ic_media_play" />
+
+            <ImageButton
+                android:id="@+id/imageButton4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.33"
+                app:srcCompat="@android:drawable/ic_media_next" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/imageButton7"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.33"
+                app:srcCompat="@android:drawable/arrow_down_float" />
+
+            <ImageButton
+                android:id="@+id/imageButton6"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.33"
+                app:srcCompat="@android:drawable/arrow_up_float" />
+
+            <ImageButton
+                android:id="@+id/imageButton5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.33"
+                app:srcCompat="@android:drawable/ic_menu_add" />
         </TableRow>
 
     </TableLayout>

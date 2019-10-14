@@ -17,7 +17,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -31,6 +33,8 @@ public class MusicList extends AppCompatActivity {
     private ArrayList<String> directories;
     private ArrayList<String> directoriesPath;
     private ArrayAdapter adapter;
+    private TextView currentSong;
+    private ImageButton pause;
     public static final int mPrem = 1; //for premition request
 
     public static MusicService musicService; // music player
@@ -58,6 +62,24 @@ public class MusicList extends AppCompatActivity {
         directories = new ArrayList<>();
         directoriesPath = new ArrayList<>();
 
+        currentSong = (TextView) findViewById(R.id.currentSong);
+        pause = (ImageButton) findViewById(R.id.pause);
+        pause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (MusicList.isPlaying) {
+                    MusicList.musicService.pause();
+                    pause.setImageResource(android.R.drawable.ic_media_pause);
+                }
+                else {
+                    MusicList.musicService.resume();
+                    pause.setImageResource(android.R.drawable.ic_media_play);
+                }
+                MusicList.isPlaying = !MusicList.isPlaying;
+            }
+        });
+
+
         songsNames = new ArrayList<String>();
         lvSongs = (ListView) findViewById(R.id.lvSongs);
         songList = new ArrayList<Song>();
@@ -74,7 +96,7 @@ public class MusicList extends AppCompatActivity {
 //        }
 
 
-        getSongs();
+        getDirSongs("null");
         //getDirSongs();
         listSongs();
 
@@ -83,49 +105,49 @@ public class MusicList extends AppCompatActivity {
 
 
 
-    public void getSongs() {
-        songList.clear();
-        songsNames.clear();
-
-        ContentResolver cr = getContentResolver();       //--allows access to the the phone
-        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;      //--songUri is the address to the music files in the phone
-        Cursor songs = cr.query(songUri, null, null, null, null);
-        if (songs != null && songs.moveToFirst()) {
-            int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
-            int songDateAdded = songs.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED);
-            int songData = songs.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-            Song song;
-
-            String pathPatern = ".*(/(.*)/)";
-            Pattern pathP = Pattern.compile(pathPatern);
-
-            while (songs.moveToNext()) {
-                long longSongID = songs.getLong(songID);
-                String currentTitle = songs.getString(songTitle);
-                String DateAdded = songs.getString(songDateAdded);
-                String data = songs.getString(songData);
-                //songsNames.add(currentTitle);
-                Matcher m = pathP.matcher(data);
-                if(m.find()){
-                    songsNames.add(m.group(2));
-                    if(!directories.contains(m.group(2))){
-                        directories.add(m.group(2));
-                        directoriesPath.add(data);
-                    }
-                }
-                else{
-                    songsNames.add(currentTitle);
-                }
-                //songsNames.add(m.group(0));
-                //songsNames.add(String.valueOf(m.find()));
-                song = new Song(longSongID, currentTitle, DateAdded, data);
-                songList.add(song);
-            }
-
-        }
-    }
+//    public void getSongs() {
+//        songList.clear();
+//        songsNames.clear();
+//
+//        ContentResolver cr = getContentResolver();       //--allows access to the the phone
+//        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;      //--songUri is the address to the music files in the phone
+//        Cursor songs = cr.query(songUri, null, null, null, null);
+//        if (songs != null && songs.moveToFirst()) {
+//            int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
+//            int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
+//            int songDateAdded = songs.getColumnIndex(MediaStore.Audio.Media.DATE_ADDED);
+//            int songData = songs.getColumnIndex(MediaStore.Audio.Media.DATA);
+//
+//            Song song;
+//
+//            String pathPatern = ".*(/(.*)/)";
+//            Pattern pathP = Pattern.compile(pathPatern);
+//
+//            while (songs.moveToNext()) {
+//                long longSongID = songs.getLong(songID);
+//                String currentTitle = songs.getString(songTitle);
+//                String DateAdded = songs.getString(songDateAdded);
+//                String data = songs.getString(songData);
+//                //songsNames.add(currentTitle);
+//                Matcher m = pathP.matcher(data);
+//                if(m.find()){
+//                    songsNames.add(m.group(2));
+//                    if(!directories.contains(m.group(2))){
+//                        directories.add(m.group(2));
+//                        directoriesPath.add(data);
+//                    }
+//                }
+//                else{
+//                    songsNames.add(currentTitle);
+//                }
+//                //songsNames.add(m.group(0));
+//                //songsNames.add(String.valueOf(m.find()));
+//                song = new Song(longSongID, currentTitle, DateAdded, data);
+//                songList.add(song);
+//            }
+//
+//        }
+//    }
 
     public void getDirSongs(String path){
         songList.clear();
@@ -133,7 +155,13 @@ public class MusicList extends AppCompatActivity {
 
         ContentResolver cr = getContentResolver();       //--allows access to the the phone
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;      //--songUri is the address to the music files in the phone
-        Cursor songs = cr.query(songUri, null, MediaStore.Audio.Media.DATA + " like ?", new String[] {"%" + path + "%"}, null);
+        Cursor songs;
+        if(path == "null"){ //check if we should look for all songs or songs in a directory
+            songs = cr.query(songUri, null, null, null, null);
+        }
+        else {
+            songs = cr.query(songUri, null, MediaStore.Audio.Media.DATA + " like ?", new String[]{"%" + path + "%"}, null);
+        }
         if (songs != null && songs.moveToFirst()) {
             int songTitle = songs.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songID = songs.getColumnIndex(MediaStore.Audio.Media._ID);
@@ -153,7 +181,11 @@ public class MusicList extends AppCompatActivity {
                 //songsNames.add(currentTitle);
                 Matcher m = pathP.matcher(data);
                 if(m.find()){
-                    songsNames.add(m.group(2));
+                    songsNames.add(currentTitle);
+                    if(!directories.contains(m.group(2))){
+                        directories.add(m.group(2));
+                        directoriesPath.add(data);
+                    }
                 }
                 else{
                     songsNames.add(currentTitle);
@@ -176,7 +208,8 @@ public class MusicList extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // change playing song to the chosen song
                 MusicList.musicService.setSong(i);
-                MusicList.musicService.playSong();
+                MusicList.musicService.playSong(songList);
+                currentSong.setText(songsNames.get(i));
             }
         });
     }
@@ -198,6 +231,10 @@ public class MusicList extends AppCompatActivity {
                 listSongs();
             }
         });
+    }
+
+    public ArrayList<Song> getSongList() {
+        return songList;
     }
 
     //menu
@@ -225,6 +262,10 @@ public class MusicList extends AppCompatActivity {
 
             case R.id.sortD:
                 listDirectories();
+                break;
+            case R.id.sortS:
+                getDirSongs("null");
+                listSongs();
                 break;
 //            case R.id.manu_main:
 //                intent = new Intent(MusicList.this, MusicList.class);
