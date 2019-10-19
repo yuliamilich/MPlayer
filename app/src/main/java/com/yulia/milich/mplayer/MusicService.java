@@ -26,7 +26,7 @@ public class MusicService  extends Service implements
     private static MediaPlayer player; //media player
     private ArrayList<Song> valuesList; //songs List
     private int songPosn;  //current position
-    private int positionPausedInSong; // position in the pused song
+    private int positionPausedInSong; // position in the paused song
     private final IBinder musicBind = new MusicBinder();
     private boolean isStopped; //state of the player
     private Intent playIntent;
@@ -58,11 +58,23 @@ public class MusicService  extends Service implements
 
     }
 
+//    public boolean isPrepered(){
+//        return player.
+//    }
+
     public void pauseMusic() {
         player.pause();
         //stopService(new Intent(this));
         isStopped = true;
         positionPausedInSong = player.getCurrentPosition();
+    }
+
+    public int getCurrentPosition(){
+        return player.getCurrentPosition();
+    }
+
+    public int getDuration(){
+        return player.getDuration();
     }
 
     public void getSongs() {
@@ -92,6 +104,10 @@ public class MusicService  extends Service implements
 
     public void setSongPosn(int pos) {
         this.songPosn = pos;
+    }
+
+    public void seekTo(int position){
+        player.seekTo(position);
     }
 
     @Override
@@ -195,4 +211,5 @@ public class MusicService  extends Service implements
         // TODO Auto-generated method stub
         return false;
     }
+
 }

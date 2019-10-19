@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -35,6 +38,9 @@ public class MusicList extends AppCompatActivity {
     private ArrayAdapter adapter;
     private TextView currentSong;
     private ImageButton pause;
+    private SeekBar mseekBar;
+    private Handler handler;
+    private Runnable runnable;
     public static final int mPrem = 1; //for premition request
 
     public static MusicService musicService; // music player
@@ -47,7 +53,12 @@ public class MusicList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_list);
 
+        handler = new Handler();
+
+
+
         musicService = new MusicService();
+//        musicService.onCreate();
 
         musicBound = false;
 
@@ -76,6 +87,7 @@ public class MusicList extends AppCompatActivity {
                     pause.setImageResource(android.R.drawable.ic_media_play);
                 }
                 MusicList.isPlaying = !MusicList.isPlaying;
+                playCycle();
             }
         });
 
@@ -100,7 +112,50 @@ public class MusicList extends AppCompatActivity {
         //getDirSongs();
         listSongs();
 
+        mseekBar = (SeekBar) findViewById(R.id.seekBar);
 
+//        if (musicService)
+
+        mseekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //do something when the seekbar is changed
+
+                if (fromUser){
+                    musicService.seekTo(progress);
+                    mseekBar.setMax(musicService.getDuration());
+                    playCycle();
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+    });
+
+    }
+
+    public void playCycle(){
+        mseekBar.setProgress(musicService.getCurrentPosition());
+//        mseekBar.setProgress(playIntent.getExtras().getInt("position", 0));
+
+//        mseekBar.setProgress(30);
+
+        if(MusicList.isPlaying){
+            runnable = new Runnable() {
+                @Override
+                public void run() {
+                    playCycle();
+                }
+            };
+            handler.postDelayed(runnable, 1000);
+        }
     }
 
 
@@ -210,6 +265,7 @@ public class MusicList extends AppCompatActivity {
                 MusicList.musicService.setSong(i);
                 MusicList.musicService.playSong(songList);
                 currentSong.setText(songsNames.get(i));
+                mseekBar.setProgress(0);
             }
         });
     }
