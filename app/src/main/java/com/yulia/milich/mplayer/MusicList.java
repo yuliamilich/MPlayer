@@ -39,9 +39,9 @@ public class MusicList extends AppCompatActivity {
     private TextView currentSong;
     private ImageButton pause;
     private SeekBar mseekBar;
-    private Handler handler;
-    private Runnable runnable;
-    public static final int mPrem = 1; //for premition request
+    private Handler handler, handler2;
+    private Runnable runnable, runnable2;
+    public static final int mPerm = 1; //for permition request
 
     public static MusicService musicService; // music player
     private Intent playIntent;
@@ -54,11 +54,9 @@ public class MusicList extends AppCompatActivity {
         setContentView(R.layout.activity_music_list);
 
         handler = new Handler();
-
-
+        handler2 = new Handler();
 
         musicService = new MusicService();
-//        musicService.onCreate();
 
         musicBound = false;
 
@@ -91,30 +89,22 @@ public class MusicList extends AppCompatActivity {
             }
         });
 
-
         songsNames = new ArrayList<String>();
         lvSongs = (ListView) findViewById(R.id.lvSongs);
         songList = new ArrayList<Song>();
 
-//        if (ContextCompat.checkSelfPermission(MusicList.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(MusicList.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                ActivityCompat.requestPermissions(MusicList.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, mPrem);
-//            } else {
-//                ActivityCompat.requestPermissions(MusicList.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, mPrem);
-//            }
-//
-//        } else {
-//            //todo enter to the list
-//        }
-
-
         getDirSongs("null");
-        //getDirSongs();
         listSongs();
 
         mseekBar = (SeekBar) findViewById(R.id.seekBar);
 
-//        if (musicService)
+        try{
+            mseekBar.setMax(musicService.getDuration());
+            playCycle();
+        }
+        catch (Exception e){
+            untilPrepered();
+        }
 
         mseekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -141,11 +131,24 @@ public class MusicList extends AppCompatActivity {
 
     }
 
+    public void untilPrepered(){
+        if(!musicService.prepered){
+            runnable2 = new Runnable() {
+                @Override
+                public void run() {
+                    untilPrepered();
+                }
+            };
+            handler2.postDelayed(runnable2, 1000);
+        }
+        else {
+            mseekBar.setMax(musicService.getDuration());
+            playCycle();
+        }
+    }
+
     public void playCycle(){
         mseekBar.setProgress(musicService.getCurrentPosition());
-//        mseekBar.setProgress(playIntent.getExtras().getInt("position", 0));
-
-//        mseekBar.setProgress(30);
 
         if(MusicList.isPlaying){
             runnable = new Runnable() {
@@ -370,7 +373,10 @@ public class MusicList extends AppCompatActivity {
     protected void onDestroy() {
         //shut down music service
         stopService(playIntent);
+        musicService.release();
         musicService = null;
+        handler.removeCallbacks(runnable);
+        handler2.removeCallbacks(runnable2);
         super.onDestroy();
         System.exit(0);
     }

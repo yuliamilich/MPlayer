@@ -30,6 +30,7 @@ public class MusicService  extends Service implements
     private final IBinder musicBind = new MusicBinder();
     private boolean isStopped; //state of the player
     private Intent playIntent;
+    public static boolean prepered = false;
 //    private MusicList m;
 
     @Override
@@ -57,10 +58,6 @@ public class MusicService  extends Service implements
 //        valuesList = m.getSongList();
 
     }
-
-//    public boolean isPrepered(){
-//        return player.
-//    }
 
     public void pauseMusic() {
         player.pause();
@@ -189,6 +186,10 @@ public class MusicService  extends Service implements
         return player.isPlaying();
     }
 
+    public void release(){
+        player.release();
+    }
+
     public void resume() {
         if (player != null)
             player.start();
@@ -198,6 +199,7 @@ public class MusicService  extends Service implements
     public void onPrepared(MediaPlayer mp) {
         // TODO Auto-generated method stub
         mp.start();
+        prepered = true;
     }
 
     @Override
